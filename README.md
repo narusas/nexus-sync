@@ -1,5 +1,5 @@
 # nexus-sync
-Sync between two nexus repositories
+Sync between two sonatype nexus repositories
 
 Until nexu 2, All maven artifact is just file and folder, so Whenever I want to sync to nexus, just copy or upload `storage` folder.
 But  nexus 3 stores artifact into DB. So only sync option is call web API, sadly.
