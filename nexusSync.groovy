@@ -6,14 +6,17 @@ import static groovyx.net.http.ContentType.*
 
 def printUsage(){
   println """Usage:
-  groovy nexusSync.groovy [type] [sourceUrl] [toUrl]
+  groovy nexusSync.groovy [type] [sourceUrl] [toUrl] [TargetNexusID] [TargetNexusPass]
 
-  type:      maven or npm
-  sourceUrl: sync source. must end with '/'
-  toUrl:     sync target. must end with '/'
+  type:      		maven or npm
+  sourceUrl: 		sync source. must end with '/'
+  toUrl:     		sync target. must end with '/'
+  TargetNexusID:	traget Nexus ID Default admin. Optional
+  TargetNexusPass:	traget Nexus ID Default admin. Optional
 
 Example:
-  groovy nexusSync.groovy maven http://localhost:8081/nexus/maven-public/ http://my-private-nexus.com/nexus/private_repository/
+  groovy nexusSync.groovy maven http://localhost:8081/nexus/maven-public/ http://my-private-nexus.com/nexus/private_repository/ admin admin123
+  
 """
 }
 
@@ -35,6 +38,23 @@ def isValidUrl(url) {
 
 def sourceFullUrl = args[1];
 def targetFullUrl = args[2];
+def nexusID = args [3];
+def nexusPass = args [4];
+
+if (nexusID) {
+  println "Traget Nexus id ${nexusID}"
+} else {
+  println "Traget Nexus id admin"
+  def nexusID = admin
+}
+
+if (nexusPass) {
+  println "Traget Nexus Pass ${nexusPass}"
+} else {
+  println "Traget Nexus Pass admin123"
+  def nexusPass = admin123
+}
+
 
 if (sourceFullUrl == targetFullUrl || ! isValidUrl(sourceFullUrl) || ! isValidUrl(targetFullUrl)){
   println "Invalid url"
@@ -66,7 +86,7 @@ def fetch = { url, repository->
 	def restClient = new RESTClient(url)
 	def continuationToken = null ;
 	def items = []
-	def path = "${context}/service/rest/beta/assets".replace('//','/').replace('//','/').replace('//','/')
+	def path = "${context}/service/rest/v1/assets".replace('//','/').replace('//','/').replace('//','/')
 
 	while(true) {
 		def query = ['repository':repository]
@@ -140,7 +160,7 @@ repositories.each { repository ->
 			def rightPath = "/repository/${repository.to}/"
 
 			def uploadUrl = "${rightUrl}/${rightPath[1..-1]}${subpath}"
-			def uploadCmd = "curl -v -u admin:admin123 --upload-file ${fileName} ${uploadUrl}"
+			def uploadCmd = "curl -v -u ${nexusID}:${nexusPass} --upload-file ${fileName} ${uploadUrl}"
 			println uploadCmd
 			println uploadCmd.execute().text
 		}
